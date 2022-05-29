@@ -69,7 +69,7 @@ public class UserDaoTest {
     }
     
     @Test(expected= EmptyResultDataAccessException.class)
-    public void getUserFailure() throws SQLException, ClassNotFoundException {
+    public void getUserFailure() throws SQLException {
         dao.deleteAll();
         assertThat(dao.getCount(), is(0));
         
