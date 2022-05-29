@@ -8,6 +8,9 @@ import java.sql.SQLException;
 import com.mysql.cj.protocol.Resultset;
 import org.springframework.dao.EmptyResultDataAccessException;
 import springbook.user.dao.connection.SimpleConnectionMaker;
+import springbook.user.dao.strategy.AddStatement;
+import springbook.user.dao.strategy.DeleteAllStatement;
+import springbook.user.dao.strategy.StatementStrategy;
 import springbook.user.domain.User;
 
 import javax.sql.DataSource;
@@ -18,38 +21,6 @@ public class UserDao {
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
     }
-
-    public void add(User user) throws SQLException {
-        Connection c = null;
-        PreparedStatement ps = null;
-        
-        try {
-            c = dataSource.getConnection();
-            ps = c.prepareStatement("insert into users(id, name, password) values(?, ?, ?)");
-            ps.setString(1, user.getId());
-            ps.setString(2, user.getName());
-            ps.setString(3, user.getPassword());
-            ps.executeUpdate();
-        } catch(SQLException e) {
-            throw e;
-        } finally {
-            if(ps != null) {
-                try {
-                    ps.close();
-                } catch(SQLException e) {
-                    
-                }
-            }
-            if(c != null) {
-                try {
-                    c.close();
-                } catch(SQLException e) {
-                    
-                }
-            }
-        }
-    }
-
 
     public User get(String id) throws SQLException {
         Connection c = null;
@@ -113,14 +84,24 @@ public class UserDao {
         ps.close();
         c.close();
     }
+
+    public void add(User user) throws SQLException {
+        StatementStrategy stm = new AddStatement(user);
+        jdbcContextWithStatementStrategy(stm);
+    }
     
     public void deleteAll() throws SQLException {
+        StatementStrategy stm = new DeleteAllStatement();
+        jdbcContextWithStatementStrategy(stm);
+    }
+    
+    public void jdbcContextWithStatementStrategy(StatementStrategy stm) throws SQLException {
         Connection c = null;
         PreparedStatement ps = null;
         
         try{
             c = dataSource.getConnection();
-            ps = c.prepareStatement("delete from users");
+            ps = stm.makePreparedStatement(c);
             ps.executeUpdate();
         } catch(SQLException e) {
             throw e;
