@@ -5,21 +5,24 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import com.mysql.cj.protocol.Resultset;
 import org.springframework.dao.EmptyResultDataAccessException;
-import springbook.user.dao.connection.SimpleConnectionMaker;
-import springbook.user.dao.strategy.AddStatement;
-import springbook.user.dao.strategy.DeleteAllStatement;
+import springbook.user.dao.context.JdbcContext;
 import springbook.user.dao.strategy.StatementStrategy;
 import springbook.user.domain.User;
 
 import javax.sql.DataSource;
 
 public class UserDao {
+    
     private DataSource dataSource;
+    
+    private JdbcContext jdbcContext;
 
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
+    }
+    public void setJdbcContext(JdbcContext jdbcContext) {
+        this.jdbcContext = jdbcContext;
     }
 
     public User get(String id) throws SQLException {
@@ -86,7 +89,7 @@ public class UserDao {
     }
 
     public void add(User user) throws SQLException {
-        jdbcContextWithStatementStrategy(new StatementStrategy() {
+        jdbcContext.workWithStatementStrategy(new StatementStrategy() {
             @Override
             public PreparedStatement makePreparedStatement(Connection c) throws SQLException {
                 PreparedStatement ps = c.prepareStatement("insert into users(id, name, password) values(?, ?, ?)");
@@ -100,41 +103,13 @@ public class UserDao {
     }
     
     public void deleteAll() throws SQLException {
-        jdbcContextWithStatementStrategy(new StatementStrategy() {
+        jdbcContext.workWithStatementStrategy(new StatementStrategy() {
             @Override
             public PreparedStatement makePreparedStatement(Connection c) throws SQLException {
                 PreparedStatement ps = c.prepareStatement("delete from users");
                 return ps;
             }
         });
-    }
-    
-    public void jdbcContextWithStatementStrategy(StatementStrategy stm) throws SQLException {
-        Connection c = null;
-        PreparedStatement ps = null;
-        
-        try{
-            c = dataSource.getConnection();
-            ps = stm.makePreparedStatement(c);
-            ps.executeUpdate();
-        } catch(SQLException e) {
-            throw e;
-        } finally {
-            if(ps != null) {
-                try {
-                    ps.close();
-                } catch(SQLException e) {
-                }
-            }
-            if(c != null) {
-                try {
-                    c.close();
-                } catch(SQLException e) {
-                    
-                }
-            }
-        }
-        
     }
     
     public int getCount() throws SQLException {
@@ -173,7 +148,6 @@ public class UserDao {
                 }
             }
         }
-        
     }
 
 }
