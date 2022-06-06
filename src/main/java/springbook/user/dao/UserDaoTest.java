@@ -5,19 +5,13 @@ import static org.junit.Assert.*;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.JUnitCore;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.support.GenericXmlApplicationContext;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.datasource.SingleConnectionDataSource;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.util.Assert;
-import springbook.user.dao.connection.CountingConnectionMaker;
 import springbook.user.domain.User;
 
 import java.sql.SQLException;
@@ -46,6 +40,14 @@ public class UserDaoTest {
         System.out.println(context);
         System.out.println(this);
         
+    }
+    
+    @Test
+    public void duplicateKey() {
+        dao.deleteAll();
+        
+        dao.add(this.user1);
+        dao.add(this.user1);
     }
     
     @Test
