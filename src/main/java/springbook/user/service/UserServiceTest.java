@@ -21,6 +21,7 @@ import springbook.user.dao.UserDao;
 import springbook.user.domain.Level;
 import springbook.user.domain.User;
 
+import javax.sql.DataSource;
 import java.util.Arrays;
 import java.util.List;
 
@@ -33,6 +34,9 @@ import java.util.List;
 public class UserServiceTest {
     @Autowired
     UserService userService;
+    
+    @Autowired
+    DataSource dataSource;
     
     @Autowired
     UserDao userDao;
@@ -50,8 +54,43 @@ public class UserServiceTest {
         );
     }
     
+    static class TestUserService extends UserService {
+        private String id;
+        
+        private TestUserService(String id) {
+            this.id = id;
+        }
+
+        @Override
+        protected void upgradeLevel(User user) {
+            if(user.getId().equals(this.id)) throw new TestUserServiceException();
+            super.upgradeLevel(user);
+        }
+    }
+    
+    static class TestUserServiceException extends RuntimeException {
+    }
+    
     @Test
-    public void upgradeLevels() {
+    public void upgradeAllOrNothing() throws Exception {
+        UserService testUserService = new TestUserService(users.get(3).getId());
+        testUserService.setUserDao(this.userDao);
+        testUserService.setDataSource(this.dataSource);
+        
+        this.userDao.deleteAll();
+        for(User user : users) userDao.add(user);
+        
+        try {
+            testUserService.upgradeLevels();
+            fail("TestUserServiceException expected");
+        }
+        catch(TestUserServiceException e) {
+        }
+        checkLevelUpgraded(users.get(1), false);
+    }
+    
+    @Test
+    public void upgradeLevels() throws Exception {
         userDao.deleteAll();
         for(User user : users) {
             userDao.add(user);
