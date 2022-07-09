@@ -25,6 +25,7 @@ import springbook.user.dao.UserDao;
 import springbook.user.domain.Level;
 import springbook.user.domain.User;
 
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -125,10 +126,15 @@ public class UserServiceTest {
     public void upgradeAllOrNothing() {
         UserServiceImpl testUserService = new TestUserService(users.get(3).getId());
         testUserService.setUserDao(this.userDao);
+
+        TransactionHandler txHandler = new TransactionHandler();
+        txHandler.setTarget(testUserService);
+        txHandler.setTransactionManager(transactionManager);
+        txHandler.setPattern("upgradeLevels");
         
-        UserServiceTx txUserService = new UserServiceTx();
-        txUserService.setUserService(testUserService);
-        txUserService.setTransactionManager(this.transactionManager);
+        UserService txUserService = (UserService) Proxy.newProxyInstance(
+                getClass().getClassLoader(), new Class[] { UserService.class }, txHandler
+        );
         
         this.userDao.deleteAll();
         for(User user : users) userDao.add(user);
