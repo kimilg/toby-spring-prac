@@ -20,10 +20,12 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 import springbook.user.dao.UserDao;
 import springbook.user.domain.Level;
 import springbook.user.domain.User;
@@ -40,11 +42,11 @@ import java.util.List;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations="/test-applicationContext.xml")
 public class UserServiceTest {
-    @Autowired
+    @Autowired 
     UserService userService;
     
-    @Autowired
-    UserServiceImpl userServiceImpl;
+    @Autowired 
+    UserService testUserService;
     
     @Autowired
     PlatformTransactionManager transactionManager;
@@ -68,12 +70,8 @@ public class UserServiceTest {
         );
     }
     
-    static class TestUserService extends UserServiceImpl {
-        private String id;
-        
-        private TestUserService(String id) {
-            this.id = id;
-        }
+    static class TestUserServiceImpl extends UserServiceImpl {
+        private String id = "madnite1";
 
         @Override
         protected void upgradeLevel(User user) {
@@ -84,6 +82,7 @@ public class UserServiceTest {
     
     static class TestUserServiceException extends RuntimeException {
     }
+    
     
     static class MockUserDao implements  UserDao {
         private List<User> users;
@@ -129,26 +128,22 @@ public class UserServiceTest {
     }
     
     @Test
-    @DirtiesContext
     public void upgradeAllOrNothing() throws Exception{
-        UserServiceImpl testUserService = new TestUserService(users.get(3).getId());
-        testUserService.setUserDao(this.userDao);
-        
-        ProxyFactoryBean txProxyFactoryBean = 
-                context.getBean("&userService", ProxyFactoryBean.class);
-        txProxyFactoryBean.setTarget(testUserService);
-        UserService txUserService = (UserService) txProxyFactoryBean.getObject(); 
-        
         this.userDao.deleteAll();
         for(User user : users) userDao.add(user);
         
         try {
-            txUserService.upgradeLevels();
+            this.testUserService.upgradeLevels();
             fail("TestUserServiceException expected");
         }
         catch(TestUserServiceException e) {
         }
         checkLevelUpgraded(users.get(1), false);
+    }
+    
+    @Test
+    public void advisorAutoProxyCreator() {
+        assertThat(java.lang.reflect.Proxy.class.isAssignableFrom(testUserService.getClass()), is(true));
     }
     
     @Test
