@@ -6,8 +6,6 @@ properties([
     disableConcurrentBuilds()
 ])
 node {
-     
-   
 
     stage('Checkout') {
         checkout([
@@ -24,7 +22,11 @@ node {
 }
 
 def integrationTest() {
+    nodeJsHome = tool name: 'nodejs', type: 'nodejs'
+    newmanHome = ${nodeJsHome}
+    
     try {
+        sh "echo '${nodeJsHome}'"
         sh "newman run ~/Downloads/ilgoo-test-collection.json"
     } catch(e) {
         throw e
