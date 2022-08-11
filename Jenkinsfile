@@ -6,7 +6,7 @@ properties([
     disableConcurrentBuilds()
 ])
 node {
-    
+     
     env.JAVA_HOME = "${jdk}"
 
     stage('Checkout') {
