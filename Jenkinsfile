@@ -27,7 +27,7 @@ def integrationTest() {
     
     try {
         sh "echo ${nodeJsHome}"
-        sh "${newmanHome}/newman -v"
+        sh "${newmanHome}/newman run Downloads/ilgoo-test-collection.json"
     } catch(e) {
         throw e
     }
