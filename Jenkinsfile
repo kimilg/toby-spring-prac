@@ -27,7 +27,7 @@ def integrationTest() {
     
     try {
         sh "echo ${nodeJsHome}"
-        sh "${newmanHome}/newman -v"
+        sh "ls ${newmanHome}/bin"
     } catch(e) {
         throw e
     }
