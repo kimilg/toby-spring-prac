@@ -23,11 +23,11 @@ node {
 
 def integrationTest() {
     nodeJsHome = tool name: 'nodejs', type: 'nodejs'
-    newmanHome = "${nodeJsHome}"
+    newmanHome = "${nodeJsHome}/bin"
     
     try {
         sh "echo ${nodeJsHome}"
-        sh "newman run ~/Downloads/ilgoo-test-collection.json"
+        sh "${newmanHome}/newman run ~/Downloads/ilgoo-test-collection.json"
     } catch(e) {
         throw e
     }
