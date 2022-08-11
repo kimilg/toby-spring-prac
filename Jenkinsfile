@@ -7,7 +7,7 @@ properties([
 ])
 node {
      
-    env.JAVA_HOME = "${jdk}"
+   
 
     stage('Checkout') {
         checkout([
