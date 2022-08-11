@@ -26,6 +26,7 @@ def integrationTest() {
     newmanHome = "${nodeJsHome}/bin"
     
     try {
+        sh "sudo ln -s /usr/local/bin/node /usr/bin/node"
         sh "${newmanHome}/newman run ~/Downloads/ilgoo-test-collection.json"
     } catch(e) {
         throw e
