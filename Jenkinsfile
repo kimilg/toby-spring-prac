@@ -26,11 +26,7 @@ def integrationTest() {
     newmanHome = "${nodeJsHome}/bin"
     
     try {
-        sh "echo ${nodeJsHome}"
-        sh "npm -v"
-        sh "node -v"
-        sh "newman -v"
-        sh "${newman_path}/newman run ~/Downloads/ilgoo-test-collection.json"
+        sh "${newmanHome}/newman run ~/Downloads/ilgoo-test-collection.json"
     } catch(e) {
         throw e
     }
