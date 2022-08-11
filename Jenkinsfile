@@ -26,8 +26,10 @@ def integrationTest() {
     newmanHome = "${nodeJsHome}/bin"
     
     try {
-        sh 'npm config ls'
-        sh "${newmanHome}/newman run ~/Downloads/ilgoo-test-collection.json"
+        nodejs('nodejs') {
+            sh "node -v"
+            sh "${newmanHome}/newman run ~/Downloads/ilgoo-test-collection.json"
+        }
     } catch(e) {
         throw e
     }
