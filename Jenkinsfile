@@ -18,10 +18,10 @@ node {
     }
     
     if(isMergeCommit()){
-        echo "wow this works"
+        echo "wow merge commit!"
     }
     else {
-        echo "wow this works@@@@"
+        echo "wow not merge commit@!"
     }
     
     stage('IntegrationTest') {
@@ -33,7 +33,7 @@ def isMergeCommit() {
     commitName = checkout(scm).GIT_COMMIT
     return sh (
         script : "git rev-parse --verify -q ${commitName}^2 > /dev/null;",  
-        returnStatus: true
+        returnStatus: false
         ) == 0
 }
 
