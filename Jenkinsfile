@@ -33,10 +33,10 @@ def integrationTest() {
     
     try {
         nodejs('nodejs') {
-            sh "echo ${BRANCH_NAME}"
-            sh "echo ${CHANGE_TARGET}"    
-            sh "echo ${CHANGE_BRANCH}" 
-            sh "echo ${BRANCH_IS_PRIMARY}"
+            echo "${BRANCH_NAME}"
+            echo "${CHANGE_TARGET}"    
+            echo "${CHANGE_BRANCH}" 
+            echo "${BRANCH_IS_PRIMARY}"
             sh "node -v"
             sh "${newmanHome}/newman run ~/Downloads/ilgoo-test-collection.json"
         }
