@@ -29,13 +29,17 @@ def integrationTest() {
     nodeJsHome = tool name: 'nodejs', type: 'nodejs'
     newmanHome = "${nodeJsHome}/bin"
     
+    withCheckout(scm) {
+        echo "git commit is ${env.GIT_COMMIT}"
+        sh "if git rev-parse --verify -q ${env.GIT_COMMIT}^2 > /dev/null; then " +
+                               "echo 'commit ${env.GIT_COMMIT} is a merge commit' " +
+                            "else " +
+                               "echo 'commit ${env.GIT_COMMIT} is a simple commit' " + 
+                        "fi"
+    }
+    
     try {
         nodejs('nodejs') {
-            sh "if git rev-parse --verify -q ${env.GIT_COMMIT}^2 > /dev/null; then " +
-                       "echo 'commit ${env.GIT_COMMIT} is a merge commit' " +
-                    "else " +
-                       "echo 'commit ${env.GIT_COMMIT} is a simple commit' " + 
-                "fi"
             sh "node -v"
             sh "${newmanHome}/newman run ~/Downloads/ilgoo-test-collection.json"
         }
