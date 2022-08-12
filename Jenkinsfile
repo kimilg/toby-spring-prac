@@ -28,14 +28,10 @@ def isMergeCommit() {
     commitName = checkout(scm).GIT_COMMIT
     return sh (
         script : '''#!/bin/sh +x
-           if `git rev-parse --verify -q ${commitName}^2 > /dev/null;`  
-           then 
-              echo "This commit is merge commit : ${commitName}" 
-           else 
-              echo "This commit is NOT merge commit : ${commitName}"
-           fi''',
-         returnStdout: true
-        ).trim()
+           `git rev-parse --verify -q ${commitName}^2 > /dev/null;`  
+           ''',
+         returnStatus: true
+        ) == 0
 }
 
 def integrationTest() {
