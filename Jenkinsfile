@@ -43,7 +43,7 @@ def integrationTest() {
     commitName = checkout(scm).GIT_COMMIT
     branchName = checkout(scm).BRANCH_NAME
     echo "git commit is ${commitName}"
-    echo "branch name is ${branchName}"
+    echo "branch name is " + env.BRANCH_NAME
     
     /*sh '''#!/bin/sh +x
        if `git rev-parse --verify -q ${commitName}^2 > /dev/null;`  
