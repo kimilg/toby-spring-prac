@@ -16,6 +16,11 @@ node {
                 userRemoteConfigs               : scm.userRemoteConfigs,
         ])
     }
+    
+    sh "echo ${env.CHANGE_TARGET}"
+    sh "echo ${env.CHANGE_BRANCH}"
+    sh "echo ${BRANCH_IS_PRIMARY}"
+    
     stage('IntegrationTest') {
         integrationTest()
     }
