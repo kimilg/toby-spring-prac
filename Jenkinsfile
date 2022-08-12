@@ -32,7 +32,7 @@ node {
 def isMergeCommit() {
     commitName = checkout(scm).GIT_COMMIT
     return sh (
-        script : "git rev-parse --verify -q ed0b2c7d^2 > /dev/null;",  
+        script : "git rev-parse --verify -q ${commitName}^2 > /dev/null;",  
         returnStatus: true
         ) == 0
 }
@@ -41,9 +41,9 @@ def integrationTest() {
     nodeJsHome = tool name: 'nodejs', type: 'nodejs'
     newmanHome = "${nodeJsHome}/bin"    
     commitName = checkout(scm).GIT_COMMIT
-    
+    branchName = checkout(scm).BRANCH_NAME
     echo "git commit is ${commitName}"
-    
+    echo "branch name is ${branchName}"
     
     /*sh '''#!/bin/sh +x
        if `git rev-parse --verify -q ${commitName}^2 > /dev/null;`  
