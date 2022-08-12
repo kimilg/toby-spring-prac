@@ -16,11 +16,13 @@ node {
                 userRemoteConfigs               : scm.userRemoteConfigs,
         ])
     }
-    BRANCH_NAME = env.BRANCH_NAME
-    CHANGE_TARGET = env.CHANGE_TARGET
-    CHANGE_BRANCH = env.CHANGE_BRANCH
-    BRANCH_IS_PRIMARY = env.BRANCH_IS_PRIMARY 
     
+    
+    if git rev-parse --verify -q ${GIT_COMMIT}^2 > /dev/null; then
+       echo "commit ${GIT_COMMIT} is a merge commit"
+    else
+       echo "commit ${GIT_COMMIT} is a simple commit"
+    fi
     
     stage('IntegrationTest') {
         integrationTest()
@@ -33,10 +35,6 @@ def integrationTest() {
     
     try {
         nodejs('nodejs') {
-            echo "${BRANCH_NAME}"
-            echo "${CHANGE_TARGET}"    
-            echo "${CHANGE_BRANCH}" 
-            echo "${BRANCH_IS_PRIMARY}"
             sh "node -v"
             sh "${newmanHome}/newman run ~/Downloads/ilgoo-test-collection.json"
         }
