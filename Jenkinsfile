@@ -34,7 +34,7 @@ def isMergeCommit() {
     return sh (
         script : "git rev-parse --verify -q ${commitName}^2 > /dev/null;",  
         returnStatus: true
-        ) == 1
+        ) == 0
 }
 
 def integrationTest() {
