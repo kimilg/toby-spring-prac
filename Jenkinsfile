@@ -40,7 +40,7 @@ def integrationTest() {
 
     try {
         nodejs('nodejs') {
-        sh '''#!/bin/sh 
+        sh '''#!/bin/sh +x
                    if `git rev-parse --verify -q ${commitName}^2 > /dev/null;`  
                    then 
                       echo "1111" 
