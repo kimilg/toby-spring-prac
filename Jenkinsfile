@@ -1,4 +1,5 @@
 #!groovy
+#!/bin/sh
 
 DEFAULT_LINK_URL = env.BUILD_URL
 
