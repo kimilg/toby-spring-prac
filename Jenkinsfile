@@ -25,6 +25,7 @@ node {
 }
 
 def isMergeCommit() {
+    commitName = checkout(scm).GIT_COMMIT
     return sh (
         script : '''#!/bin/sh +x
            if `git rev-parse --verify -q ${commitName}^2 > /dev/null;`  
