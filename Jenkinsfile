@@ -29,14 +29,13 @@ def integrationTest() {
     nodeJsHome = tool name: 'nodejs', type: 'nodejs'
     newmanHome = "${nodeJsHome}/bin"
     
-    withCheckout(scm) {
-        echo "git commit is ${env.GIT_COMMIT}"
-        sh "if git rev-parse --verify -q ${env.GIT_COMMIT}^2 > /dev/null; then " +
-                               "echo 'commit ${env.GIT_COMMIT} is a merge commit' " +
+    commitName = checkout(scm).GIT_COMMIT
+        echo "git commit is ${commitName}"
+        sh "if git rev-parse --verify -q ${commitName}^2 > /dev/null; then " +
+                               "echo 'commit ${commitName} is a merge commit' " +
                             "else " +
-                               "echo 'commit ${env.GIT_COMMIT} is a simple commit' " + 
+                               "echo 'commit ${commitName} is a simple commit' " + 
                         "fi"
-    }
     
     try {
         nodejs('nodejs') {
