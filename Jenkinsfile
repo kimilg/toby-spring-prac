@@ -1,5 +1,4 @@
 #!groovy
-#!/bin/sh
 
 DEFAULT_LINK_URL = env.BUILD_URL
 
@@ -30,7 +29,8 @@ def integrationTest() {
     
     commitName = checkout(scm).GIT_COMMIT
         echo "git commit is ${commitName}"
-        sh "if git rev-parse --verify -q ${commitName}^2 > /dev/null; then echo 11111 else echo 22222 fi"
+        sh "#!/bin/sh " +
+           "if git rev-parse --verify -q ${commitName}^2 > /dev/null; then echo 11111 else echo 22222 fi"
     
     try {
         nodejs('nodejs') {
