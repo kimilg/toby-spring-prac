@@ -31,12 +31,8 @@ def integrationTest() {
         echo "git commit is ${commitName}"
         sh "#!/bin/sh " +
            "if git rev-parse --verify -q ${commitName}^2 > /dev/null; " + 
-           "then"
-        echo "11111" 
-        sh "else"
-        echo "22222"
-        sh "fi"
-    
+           "then echo `1111` else echo '2222' fi"
+
     try {
         nodejs('nodejs') {
             sh "node -v"
