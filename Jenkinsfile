@@ -31,11 +31,11 @@ def integrationTest() {
     
     try {
         nodejs('nodejs') {
-            sh "if git rev-parse --verify -q ${GIT_COMMIT}^2 > /dev/null; then \
-                       echo 'commit ${GIT_COMMIT} is a merge commit' \
-                    else \
-                       echo 'commit ${GIT_COMMIT} is a simple commit' \ 
-                fi"
+            sh "if git rev-parse --verify -q ${GIT_COMMIT}^2 > /dev/null; then " +
+                       "echo 'commit ${GIT_COMMIT} is a merge commit' " +
+                    "else " +
+                       "echo 'commit ${GIT_COMMIT} is a simple commit' " + 
+                "fi"
             sh "node -v"
             sh "${newmanHome}/newman run ~/Downloads/ilgoo-test-collection.json"
         }
