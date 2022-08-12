@@ -17,7 +17,9 @@ node {
         ])
     }
     
-    echo isMergeCommit()
+    if(isMergeCommit()){
+        echo "wow this works"
+    }
     
     stage('IntegrationTest') {
         integrationTest()
