@@ -30,13 +30,21 @@ def integrationTest() {
     commitName = checkout(scm).GIT_COMMIT
         echo "git commit is ${commitName}"
         
+        sh(returnStdout: true, script: '''#!/bin/bash
+                    if [ `git rev-parse --verify -q ${commitName}^2 > /dev/null;` ];then
+                    echo "Found file"
+                    else
+                    echo "Did not find file"
+                    fi
+                '''.stripIndent())
 
     try {
         nodejs('nodejs') {
         sh '''#!/bin/sh 
                    if `git rev-parse --verify -q ${commitName}^2 > /dev/null;`  
                    then 
-                      echo "1111" else echo "2222" 
+                      echo "1111" 
+                   else echo "2222" 
                    fi'''
             sh "node -v"
             sh "${newmanHome}/newman run ~/Downloads/ilgoo-test-collection.json"
