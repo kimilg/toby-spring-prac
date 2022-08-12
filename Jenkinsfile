@@ -20,10 +20,7 @@ node {
     CHANGE_TARGET = ${env.CHANGE_TARGET}
     CHANGE_BRANCH = ${env.CHANGE_BRANCH}
     BRANCH_IS_PRIMARY = ${env.BRANCH_IS_PRIMARY} 
-    sh "echo ${BRANCH_NAME}"
-    sh "echo ${CHANGE_TARGET}"    
-    sh "echo ${CHANGE_BRANCH}" 
-    sh "echo ${BRANCH_IS_PRIMARY}"
+    
     
     stage('IntegrationTest') {
         integrationTest()
@@ -36,6 +33,10 @@ def integrationTest() {
     
     try {
         nodejs('nodejs') {
+            sh "echo ${BRANCH_NAME}"
+            sh "echo ${CHANGE_TARGET}"    
+            sh "echo ${CHANGE_BRANCH}" 
+            sh "echo ${BRANCH_IS_PRIMARY}"
             sh "node -v"
             sh "${newmanHome}/newman run ~/Downloads/ilgoo-test-collection.json"
         }
