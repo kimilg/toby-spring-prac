@@ -25,13 +25,13 @@ node {
 }
 
 def isMergeCommit() {
-    return sh '''#!/bin/sh +x
+    return sh '#!/bin/sh +x
            if `git rev-parse --verify -q ${commitName}^2 > /dev/null;`  
            then 
               echo "This commit is merge commit : ${commitName}" 
            else 
               echo "This commit is NOT merge commit : ${commitName}"
-           fi'''
+           fi'
 }
 
 def integrationTest() {
