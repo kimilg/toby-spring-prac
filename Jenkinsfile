@@ -20,6 +20,9 @@ node {
     if(isMergeCommit()){
         echo "wow this works"
     }
+    else {
+        echo "wow this works@@@@"
+    }
     
     stage('IntegrationTest') {
         integrationTest()
