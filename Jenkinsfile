@@ -50,7 +50,7 @@ def integrationTest() {
     echo "원래 branch is " + env.BRANCH_NAME
     echo "target branch is " + env.CHANGE_TARGET
     
-    echo "job name : " + env.JOB_NAME
+    echo "job name : " + env.JOB_NAME 
     
     /*sh '''#!/bin/sh +x
        if `git rev-parse --verify -q ${commitName}^2 > /dev/null;`  
