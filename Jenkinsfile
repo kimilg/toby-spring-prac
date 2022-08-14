@@ -30,7 +30,7 @@ node {
     }
 }
 
-def isMergeCommit() {
+def isMergeCommit() { 
     commitName = checkout(scm).GIT_COMMIT
     return sh (
         script : "git rev-parse --verify -q ${commitName}^2 > /dev/null;",  
