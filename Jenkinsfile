@@ -46,7 +46,7 @@ def integrationTest() {
     echo "git commit is ${commitName}"
     echo "branch name is " + scm.branches[0].name //test-jenkins
     echo "branch name 2 is " + checkout(scm).GIT_BRANCH //origin/test-jenkins
-     
+      
     echo "원래 branch is " + env.BRANCH_NAME
     echo "target branch is " + env.CHANGE_TARGET
     /*sh '''#!/bin/sh +x
