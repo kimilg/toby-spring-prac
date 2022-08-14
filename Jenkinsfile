@@ -37,7 +37,7 @@ def isMergeCommit() {
         returnStatus: true
         ) == 0
 }
-
+ 
 def integrationTest() {
     nodeJsHome = tool name: 'nodejs', type: 'nodejs'
     newmanHome = "${nodeJsHome}/bin"    
