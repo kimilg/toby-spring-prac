@@ -1,0 +1,18 @@
+on:
+  pull_request:
+    branches:
+      - main
+    types: [closed]
+jobs:
+  if_merged:
+    name: Build
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: trigger single Job
+          uses: appleboy/jenkins-action@master
+          with:
+            url: "https://cb3f-175-196-53-227.jp.ngrok.io"
+            user: "ilgoo.kim"
+            token: ${{ secrets.TOKEN }}
+            job: "newman-test-spring-test2"
