@@ -18,7 +18,7 @@ node {
         ])
     }
     
-    if(isMergeCommit() && checkout(scm).GIT_BRANCH == "origin/main"){
+    if(isMergeCommit() && env.BRANCH_NAME == "main"){
         echo "wow merge commit!"
     }
     else {
