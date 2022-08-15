@@ -21,6 +21,7 @@ import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.dao.TransientDataAccessResourceException;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -78,9 +79,41 @@ public class UserServiceTest {
             if(user.getId().equals(this.id)) throw new TestUserServiceException();
             super.upgradeLevel(user);
         }
+
+        @Override
+        public List<User> getAll() {
+            for(User user : super.getAll()) {
+                super.update(user);
+            }
+            return null;
+        }
     }
     
     static class TestUserServiceException extends RuntimeException {
+    }
+
+    @Test
+    public void upgradeAllOrNothing() throws Exception{
+        this.userDao.deleteAll();
+        for(User user : users) userDao.add(user);
+
+        try {
+            this.testUserService.upgradeLevels();
+            fail("TestUserServiceException expected");
+        }
+        catch(TestUserServiceException e) {
+        }
+        checkLevelUpgraded(users.get(1), false);
+    }
+
+    @Test(expected = TransientDataAccessResourceException.class)
+    public void readOnlyTransactionAttribute() {
+        testUserService.getAll();
+    }
+
+    @Test
+    public void advisorAutoProxyCreator() {
+        assertThat(java.lang.reflect.Proxy.class.isAssignableFrom(testUserService.getClass()), is(true));
     }
     
     
@@ -125,25 +158,6 @@ public class UserServiceTest {
         public int getCount() {
             throw new UnsupportedOperationException();
         }
-    }
-    
-    @Test
-    public void upgradeAllOrNothing() throws Exception{
-        this.userDao.deleteAll();
-        for(User user : users) userDao.add(user);
-        
-        try {
-            this.testUserService.upgradeLevels();
-            fail("TestUserServiceException expected");
-        }
-        catch(TestUserServiceException e) {
-        }
-        checkLevelUpgraded(users.get(1), false);
-    }
-    
-    @Test
-    public void advisorAutoProxyCreator() {
-        assertThat(java.lang.reflect.Proxy.class.isAssignableFrom(testUserService.getClass()), is(true));
     }
     
     @Test
