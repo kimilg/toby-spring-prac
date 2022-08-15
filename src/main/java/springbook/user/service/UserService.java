@@ -1,5 +1,6 @@
 package springbook.user.service;
 
+import org.springframework.transaction.annotation.Transactional;
 import springbook.user.domain.User;
 
 import java.util.List;
@@ -7,12 +8,15 @@ import java.util.List;
 /**
  * @author Ilgoo.Kim
  */
+@Transactional
 public interface UserService {
     void add(User user);
-    User get(String id);
-    List<User> getAll();
     void deleteAll();
     void delete(String id);
     void update(User user);
     void upgradeLevels();
+    @Transactional(readOnly = true)
+    User get(String id);
+    @Transactional(readOnly = true)
+    List<User> getAll();
 }
