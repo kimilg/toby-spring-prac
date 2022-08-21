@@ -120,20 +120,6 @@ public class UserServiceTest {
         assertThat(java.lang.reflect.Proxy.class.isAssignableFrom(testUserService.getClass()), is(true));
     }
     
-    @Test(expected=TransientDataAccessResourceException.class)
-    public void transactionReadOnlySync() {
-        DefaultTransactionDefinition txDefinition = new DefaultTransactionDefinition();
-        txDefinition.setReadOnly(true);
-        TransactionStatus txStatus = transactionManager.getTransaction(txDefinition);
-        
-        userService.deleteAll();
-        
-        userService.add(users.get(0));
-        userService.add(users.get(1));
-        
-        transactionManager.commit(txStatus);
-    }
-    
     @Test
     public void transactionSync() {
         userDao.deleteAll();
