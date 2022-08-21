@@ -8,11 +8,11 @@ import java.util.List;
  * @author user
  */
 public interface UserDao {
-    public List<User> getAll();
-    public User get(String id);
-    public void delete(String id);
-    public void add(User user);
-    public void deleteAll();
-    public int getCount();
-    public void update(User user);
+    List<User> getAll();
+    User get(String id);
+    void delete(String id);
+    void add(User user);
+    void deleteAll();
+    int getCount();
+    void update(User user);
 }
