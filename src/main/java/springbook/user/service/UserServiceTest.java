@@ -8,21 +8,35 @@ package springbook.user.service;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
-import static springbook.user.service.UserService.MIN_LOGCOUNT_FOR_SILVER;
-import static springbook.user.service.UserService.MIN_RECOMMEND_FOR_GOLD;
+import static springbook.user.service.UserServiceImpl.MIN_LOGCOUNT_FOR_SILVER;
+import static springbook.user.service.UserServiceImpl.MIN_RECOMMEND_FOR_GOLD;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.dao.TransientDataAccessResourceException;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 import springbook.user.dao.UserDao;
 import springbook.user.domain.Level;
 import springbook.user.domain.User;
 
-import javax.sql.DataSource;
+import java.lang.reflect.Proxy;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -33,14 +47,20 @@ import java.util.List;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations="/test-applicationContext.xml")
 public class UserServiceTest {
-    @Autowired
+    @Autowired 
     UserService userService;
+    
+    @Autowired 
+    UserService testUserService;
     
     @Autowired
     PlatformTransactionManager transactionManager;
     
     @Autowired
     UserDao userDao;
+    
+    @Autowired
+    ApplicationContext context;        
     
     List<User> users;
     
@@ -55,55 +75,183 @@ public class UserServiceTest {
         );
     }
     
-    static class TestUserService extends UserService {
-        private String id;
-        
-        private TestUserService(String id) {
-            this.id = id;
-        }
+    static class TestUserServiceImpl extends UserServiceImpl {
+        private String id = "madnite1";
 
         @Override
         protected void upgradeLevel(User user) {
             if(user.getId().equals(this.id)) throw new TestUserServiceException();
             super.upgradeLevel(user);
         }
+
+        @Override
+        public List<User> getAll() {
+            for(User user : super.getAll()) {
+                super.update(user);
+            }
+            return null;
+        }
     }
     
     static class TestUserServiceException extends RuntimeException {
     }
-    
+
     @Test
-    public void upgradeAllOrNothing() throws Exception {
-        UserService testUserService = new TestUserService(users.get(3).getId());
-        testUserService.setUserDao(this.userDao);
-        testUserService.setTransactionManager(this.transactionManager);
-        
+    public void upgradeAllOrNothing() throws Exception{
         this.userDao.deleteAll();
         for(User user : users) userDao.add(user);
-        
+
         try {
-            testUserService.upgradeLevels();
+            this.testUserService.upgradeLevels();
             fail("TestUserServiceException expected");
         }
         catch(TestUserServiceException e) {
         }
         checkLevelUpgraded(users.get(1), false);
     }
+
+    @Test(expected = TransientDataAccessResourceException.class)
+    public void readOnlyTransactionAttribute() {
+        testUserService.getAll();
+    }
+
+    @Test
+    public void advisorAutoProxyCreator() {
+        assertThat(java.lang.reflect.Proxy.class.isAssignableFrom(testUserService.getClass()), is(true));
+    }
+    
+    @Test(expected=TransientDataAccessResourceException.class)
+    public void transactionReadOnlySync() {
+        DefaultTransactionDefinition txDefinition = new DefaultTransactionDefinition();
+        txDefinition.setReadOnly(true);
+        TransactionStatus txStatus = transactionManager.getTransaction(txDefinition);
+        
+        userService.deleteAll();
+        
+        userService.add(users.get(0));
+        userService.add(users.get(1));
+        
+        transactionManager.commit(txStatus);
+    }
+    
+    @Test
+    public void transactionSync() {
+        userDao.deleteAll();
+        assertThat(userDao.getCount(), is(0));
+        
+        DefaultTransactionDefinition txDefinition = new DefaultTransactionDefinition();
+        TransactionStatus txStatus = transactionManager.getTransaction(txDefinition);
+        
+        userService.add(users.get(0));
+        userService.add(users.get(1));
+        assertThat(userDao.getCount(), is(2));
+        
+        transactionManager.rollback(txStatus);
+        
+        assertThat(userDao.getCount(), is(0));
+    }
+
+    @Test
+    @Transactional
+    public void transactionSyncAnnotation() {
+        userDao.deleteAll();
+        assertThat(userDao.getCount(), is(0));
+
+        userService.add(users.get(0));
+        userService.add(users.get(1));
+        assertThat(userDao.getCount(), is(2));
+    }
+
+    @Test
+    @Transactional
+    @Rollback(false)
+    public void transactionSyncAnnotationCommit() {
+        userDao.deleteAll();
+        assertThat(userDao.getCount(), is(0));
+
+        userService.add(users.get(0));
+        userService.add(users.get(1));
+        assertThat(userDao.getCount(), is(2));
+    }
+    
+    
+    static class MockUserDao implements  UserDao {
+        private List<User> users;
+        private List<User> updated = new ArrayList<>();
+    
+        private MockUserDao(List<User> users) {
+            this.users = users;
+        }
+        
+        @Override
+        public List<User> getAll() {
+            return this.users;
+        }
+        
+        private List<User> getUpdated() {
+            return this.updated;
+        }
+        
+        @Override
+        public void update(User user) {
+            updated.add(user);
+        }
+        @Override
+        public User get(String id) {
+            throw new UnsupportedOperationException();
+        }
+        @Override
+        public void delete(String id) {
+            throw new UnsupportedOperationException();
+        }
+        @Override
+        public void add(User user) {
+            throw new UnsupportedOperationException();
+        }
+        @Override
+        public void deleteAll() {
+            throw new UnsupportedOperationException();
+        }
+        @Override
+        public int getCount() {
+            throw new UnsupportedOperationException();
+        }
+    }
     
     @Test
     public void upgradeLevels() throws Exception {
-        userDao.deleteAll();
-        for(User user : users) {
-            userDao.add(user);
-        }
+        UserServiceImpl userServiceImpl= new UserServiceImpl();
+        MockUserDao mockUserDao = new MockUserDao(users);
+        userServiceImpl.setUserDao(mockUserDao);
         
-        userService.upgradeLevels();
+        userServiceImpl.upgradeLevels();
+        
+        List<User> updated = mockUserDao.getUpdated();
+        assertThat(updated.size(), is(2));
+        checkLevelUpgraded(updated.get(0), "joytouch", Level.SILVER);
+        checkLevelUpgraded(updated.get(1), "madnite1", Level.GOLD);
+    }
 
-        checkLevelUpgraded(users.get(0), false);
-        checkLevelUpgraded(users.get(1), true);
-        checkLevelUpgraded(users.get(2), false);
-        checkLevelUpgraded(users.get(3), true);
-        checkLevelUpgraded(users.get(4), false);
+    @Test
+    public void mockUpgradeLevels() {
+        UserServiceImpl userServiceImpl = new UserServiceImpl();
+        UserDao mockUserDao = mock(UserDao.class);
+        userServiceImpl.setUserDao(mockUserDao);
+        
+        when(mockUserDao.getAll()).thenReturn(this.users);
+        userServiceImpl.upgradeLevels();
+        
+        verify(mockUserDao, times(2)).update(any(User.class));
+        verify(mockUserDao, times(1)).update(users.get(1));
+        assertThat(users.get(1).getLevel(), is(Level.SILVER));
+        verify(mockUserDao, times(1)).update(users.get(3));
+        assertThat(users.get(3).getLevel(), is(Level.GOLD));
+
+        ArgumentCaptor<User> userArg = ArgumentCaptor.forClass(User.class);
+        verify(mockUserDao, times(2)).update(userArg.capture());
+        List<User> updatedUsers = userArg.getAllValues();
+        assertThat(updatedUsers.get(0), is(users.get(1)));
+        assertThat(updatedUsers.get(1), is(users.get(3)));
     }
     
     private void checkLevelUpgraded(User user, boolean upgraded) {
@@ -115,11 +263,18 @@ public class UserServiceTest {
             assertThat(userUpdate.getLevel(), is(user.getLevel()));
         }
     }
+
+    private void checkLevelUpgraded(User user, String userId, Level expectedLevel) {
+        assertThat(user.getId(), is(userId));
+        assertThat(user.getLevel(), is(expectedLevel));
+    }
     
     private void checkLevel(User user, Level expectedLevel) {
         User userUpdate = userDao.get(user.getId());
         assertThat(userUpdate.getLevel(), is(expectedLevel));
     }
+    
+    
     
     @Test
     public void upgradeLevel() {
